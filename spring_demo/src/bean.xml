@@ -3,6 +3,28 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:p="http://www.springframework.org/schema/p"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-       <!-- 配置 User 对象创建 -->
-       <bean id="user" class="com.spring.demo.User"></bean>
+        <!-- 配置 User 对象创建 -->
+        <bean id="user" class="com.spring.demo.User"></bean>
+
+        <!-- 配置 Animal 对象创建 -->
+        <!-- 1. set方法注入属性 -->
+        <!-- 使用 property 标签 完成属性注入
+        k-v形式 name 属性名称 value 属性值 -->
+        <bean id="animal" class="com.spring.demo.Animal">
+            <property name="aniname" value="mao"></property>
+            <property name="aniage" value="100"></property>
+        </bean>
+
+        <!-- 配置 Flower 对象创建 -->
+        <!-- 2. 有参数注入属性 -->
+        <!-- 使用 constructor-arg 标签 完成属性注入
+        k-v形式 name 属性名称 value 属性值 -->
+        <bean id="flower" class="com.spring.demo.Flower">
+            <!-- 通过名称 -->
+            <constructor-arg name="smell" value="Good!!"></constructor-arg>
+            <constructor-arg name="price" value="999"></constructor-arg>
+            <!-- 通过索引值 -->
+            <!-- <constructor-arg index="0" value="Bad!!"></constructor-arg>
+            <constructor-arg index="1" value="5"></constructor-arg> -->
+        </bean>
 </beans>
