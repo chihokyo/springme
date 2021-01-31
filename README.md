@@ -589,3 +589,27 @@ xml配置文件 记得新建俩对象
 
 - 在 spring xml配置文件中引入名称空间 util
 - 使用 util 标签完成 list 集合注入提取
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+                         
+       <bean id="student" class="com.spring.demo3.Student">
+           <!-- 注入List集合 -util List -->
+           <property name="hobby" ref="hobbyList"></property>
+       </bean>
+
+       <util:list id="hobbyList">
+            <value>Book</value>
+            <value>Music</value>
+            <value>Sing</value>
+        </util:list>  
+</beans>
+
+```
+

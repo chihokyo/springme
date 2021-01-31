@@ -11,6 +11,16 @@ public class Student {
     private Map<String, String> stumaps;
     private Set<String> stusets;
 
+    private List<String> hobby;
+
+    public List<String> getHobby() {
+        return this.hobby;
+    }
+
+    public void setHobby(List<String> hobby) {
+        this.hobby = hobby;
+    }
+
     // 对象
     private List<Course> courseList;
 
@@ -58,6 +68,7 @@ public class Student {
             ", stumaps='" + getStumaps() + "'" +
             ", stusets='" + getStusets() + "'" +
             ", courseList='" + courseList + "'" +
+            ", hobby='" + getHobby() + "'" +
             "}";
     }
 
