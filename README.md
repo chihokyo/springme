@@ -486,3 +486,106 @@ public class Employee {
 </bean>
 ```
 
+##### 注入集合属性
+
+- xml配置文件
+
+```java
+private String[] stucourses;
+private List<String> stulist;
+private Map<String, String> stumaps;
+private Set<String> stusets;
+```
+
+xml配置文件
+
+```xml
+<bean id="student" class="com.spring.demo3.Student">
+  <!-- 数组 -->
+  <property name="stucourses">
+    <array>
+      <value>语文</value>
+      <value>数学</value>
+      <value>英语</value>
+    </array>
+  </property>
+  <!-- List类型 -->
+  <property name="stulist">
+    <list>
+      <value>"1"</value>
+      <value>"2"</value>
+      <value>"3"</value>
+    </list>
+  </property>
+  <!-- Map类型 -->
+  <property name="stumaps">
+    <map>
+      <entry key="java" value="JAVA"></entry>
+      <entry key="js" value="JS"></entry>
+      <entry key="python" value="python"></entry>
+    </map>
+  </property>
+  <!-- Set类型 -->
+  <property name="stusets">
+    <set>
+      <value>Mysql</value>
+      <value>MongoDB</value>
+    </set>
+  </property>
+</bean>
+```
+
+集合属性里如果有其他对象的话。
+
+- 新建一个course对象
+- student里面写一个List对象 一个set方法
+- xml配置文件
+
+```java
+/**
+ * 课程类 Course
+ */
+public class Course {
+    
+    private String cname;
+
+    public String getCname() {
+        return this.cname;
+    }
+
+    public void setCname(String cname) {
+        this.cname = cname;
+    }
+}
+// student里面写一个List对象 一个set方法
+private List<Course> courseList;
+
+public void setCourseList(List<Course> courseList ) {
+  this.courseList = courseList;
+}
+```
+
+xml配置文件 记得新建俩对象
+
+```xml
+<!-- 注入List集合 -value是另一个对象 -->
+<property name="courseList">
+  <list>
+    <!-- 创建多个course对象 -->
+    <ref bean="courseA"/> 
+    <ref bean="courseB"/> 
+  </list>
+</property>
+<!-- 多个course对象 -->
+<bean id="courseA" class="com.spring.demo3.Course">
+  <property name="cname" value="Spring"></property>
+</bean>
+<bean id="courseB" class="com.spring.demo3.Course">
+  <property name="cname" value="Laravel"></property>
+</bean>
+```
+
+##### 提取公共集合属性
+
+- 在 spring xml配置文件中引入名称空间 util
+- 使用 util 标签完成 list 集合注入提取

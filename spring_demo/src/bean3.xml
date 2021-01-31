@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+       <bean id="student" class="com.spring.demo3.Student">
+           <!-- 数组 -->
+           <property name="stucourses">
+               <array>
+                   <value>语文</value>
+                   <value>数学</value>
+                   <value>英语</value>
+               </array>
+           </property>
+           <!-- List类型 -->
+           <property name="stulist">
+               <list>
+                   <value>"1"</value>
+                   <value>"2"</value>
+                   <value>"3"</value>
+               </list>
+           </property>
+           <!-- Map类型 -->
+           <property name="stumaps">
+               <map>
+                   <entry key="java" value="JAVA"></entry>
+                   <entry key="js" value="JS"></entry>
+                   <entry key="python" value="python"></entry>
+               </map>
+           </property>
+           <!-- Set类型 -->
+           <property name="stusets">
+               <set>
+                   <value>Mysql</value>
+                   <value>MongoDB</value>
+               </set>
+           </property>
+
+           <!-- 注入List集合 -value是另一个对象 -->
+           <property name="courseList">
+               <list>
+                   <!-- 创建多个course对象 -->
+                  <ref bean="courseA"/> 
+                  <ref bean="courseB"/> 
+               </list>
+           </property>
+       </bean>
+       <!-- 多个course对象 -->
+       <bean id="courseA" class="com.spring.demo3.Course">
+           <property name="cname" value="Spring"></property>
+       </bean>
+       <bean id="courseB" class="com.spring.demo3.Course">
+           <property name="cname" value="Laravel"></property>
+       </bean>
+</beans>
