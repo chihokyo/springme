@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+       <bean id="employee" class="com.spring.demo2.Employee">
+           <property name="ename" value="Tom"></property>
+           <property name="gender" value="女"></property>
+           <property name="dept" ref="dept"></property>
+           <property name="dept.dname" value="CEO"></property>
+       </bean>
+       <bean id="dept" class="com.spring.demo2.Depart">
+           <property name="dname" value="Manager"></property>
+       </bean>
+</beans>

@@ -277,8 +277,6 @@ p名称空间注入，就是为了简化xml配置。
 ref连接了id和userDao
 ```
 
-
-
 1个接口*UserDao*
 
 1个实现类*UserDaoImpl*
@@ -341,5 +339,150 @@ public class TestUserImpl {
       </bean>
      <!-- 这里的对象不是Dao而是Impl 因为接口没有对象 -->
       <bean id="userDaoImpl" class="com.spring.demo1.UserDaoImpl"></bean>
+```
+
+**注入属性 内部bean**
+
+在两个类中有包含关系的时候会用到内部bean注入。
+
+1个类*Employee* 多个员工从属于一个部分
+
+1个类*Depart* 
+
+1个测试类*TestUserImpl*
+
+1个xml配置文件
+
+以上按照顺序是这样写的
+
+```java
+// 配置文件
+<bean id="employee" class="com.spring.demo2.Employee">
+  <property name="ename" value="Tom"></property>
+  <property name="gender" value="女"></property>
+  <property name="dept">
+  	<bean id="dept" class="com.spring.demo2.Depart">
+    	<property name="dname" value="HR"></property>
+    </bean>
+    </property>
+</bean>
+// 测试类
+public class TestEmployee {
+
+    @Test
+    public void testEmployee() {
+        try (
+            ClassPathXmlApplicationContext context = 
+                new ClassPathXmlApplicationContext("bean2.xml");
+        ) {
+            Employee em = context.getBean("employee", Employee.class);
+            System.out.println(em);
+        }
+    }
+}
+// 2个普通类
+/**
+ * 部门类
+ */
+public class Depart {
+
+    private String dname;
+
+    public String getDname() {
+        return this.dname;
+    }
+
+    public void setDname(String dname) {
+        this.dname = dname;
+    }
+
+    @Override
+    public String toString() {
+        return "{" + " dname='" + getDname() + "'" + "}";
+    }
+
+}
+/**
+ * 员工类
+ */
+public class Employee {
+
+    private String ename;
+    private String gender;
+    private Depart dept;
+
+    public String getEname() {
+        return this.ename;
+    }
+
+    public void setEname(String ename) {
+        this.ename = ename;
+    }
+
+    public String getGender() {
+        return this.gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public Depart getDept() {
+        return this.dept;
+    }
+
+    public void setDept(Depart dept) {
+        this.dept = dept;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+            " ename='" + getEname() + "'" +
+            ", gender='" + getGender() + "'" +
+            ", dept='" + getDept() + "'" +
+            "}";
+    }
+
+}
+
+```
+
+**注入属性 内部bean-级联赋值**
+
+方法1 主要其实就是xml文件和上面对比一下就知道
+
+```xml
+<bean id="employee" class="com.spring.demo2.Employee">
+  <property name="ename" value="Tom"></property>
+  <property name="gender" value="女"></property>
+  <!-- 以前的写法 -->
+  <!-- <property name="dept">
+      <bean id="dept" class="com.spring.demo2.Depart">
+      	<property name="dname" value="HR"></property>
+      </bean>
+   </property> -->
+
+  <!-- 级联赋值 -->
+  <property name="dept" ref="dept"></property>
+</bean>
+<bean id="dept" class="com.spring.demo2.Depart">
+  <property name="dname" value="Manager"></property>
+</bean>
+```
+
+方法2 也只是修改了xml 但需要对象有get方法
+
+```xml
+// 需要有属性的get方法之后
+<bean id="employee" class="com.spring.demo2.Employee">
+  <property name="ename" value="Tom"></property>
+  <property name="gender" value="女"></property>
+  <property name="dept" ref="dept"></property>
+  <property name="dept.dname" value="CEO"></property>
+</bean>
+<bean id="dept" class="com.spring.demo2.Depart">
+  <property name="dname" value="Manager"></property>
+</bean>
 ```
 
