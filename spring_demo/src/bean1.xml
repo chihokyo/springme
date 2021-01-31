@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+        <bean id="userService" class="com.spring.demo1.UserService">
+            <!-- 在Service里注入userDao的对象 -->
+            <!-- name 属性:类里面属性名称 -->
+            <!-- ref 属性:创建 userDao 对象 bean 标签 id 值 -->
+            <property name="userDao" ref="userDaoImpl"></property>
+        </bean>
+        <!-- 这里的对象不是Dao而是Impl 因为接口没有对象 -->
+        <bean id="userDaoImpl" class="com.spring.demo1.UserDaoImpl"></bean>
+</beans>

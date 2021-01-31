@@ -159,7 +159,8 @@ public class User {
 ```java
 <bean id="user" class="com.spring.demo.User"></bean>
   
-(1)在 spring 配置文件中，使用 bean 标签，标签里面添加对应属性，就可以实现对象创建 (2)在 bean 标签有很多属性，介绍常用的属性
+(1)在 spring 配置文件中，使用 bean 标签，标签里面添加对应属性，就可以实现对象创建 
+(2)在 bean 标签有很多属性，介绍常用的属性
 * id 属性:唯一标识
 * class 属性:类全路径(包类路径) 
 * name属性: 早期属性，现在不用了。都用id
@@ -231,7 +232,7 @@ public class Animal {
   <constructor-arg name="price" value="999"></constructor-arg>
   <!-- 通过索引值 -->
   <!-- <constructor-arg index="0" value="Bad!!"></constructor-arg>
-            <constructor-arg index="1" value="5"></constructor-arg> -->
+       <constructor-arg index="1" value="5"></constructor-arg> -->
 </bean>
 ```
 
@@ -244,3 +245,101 @@ p名称空间注入，就是为了简化xml配置。
 - 进行属性注入，在bean标签进行操作。底层还是set方法注入。
 
 `<bean id="flower" class="com.spring.demo.Flower" p:smell="Yeah!" p:price="99">`
+
+#### 其他类型
+
+#####  **字面量**
+
+- null `<property name="anicolor"><null></null></property>`
+- 特殊符号 方法1 转义 方法2 CDATA
+
+比如上面的特殊符号举例
+
+```java
+<!-- <property name="anicolor" value="<红色>"></property> 错误的 -->
+  
+使用转义符号
+<property name="anicolor" value="&lt;红色&gt;"></property> 
+  
+使用CDATA <![[]]> 在第1个中括号里写上CDATA <![CDATA[你想写的内容]]>
+<property name="anicolor">
+	<value><![CDATA[<红色>]]></value>
+</property>
+```
+
+##### **注入属性 外部bean**
+
+注意主要其实是通过了 
+
+```xml
+<property name="userDao" ref="userDaoImpl"></property>
+<bean id="userDaoImpl" class="com.spring.demo1.UserDaoImpl">
+ref连接了id和userDao
+```
+
+
+
+1个接口*UserDao*
+
+1个实现类*UserDaoImpl*
+
+1个普通逻辑类*UserService*
+
+1个测试类*TestUserImpl*
+
+1个xml配置文件
+
+以上按照顺序是这样写的
+
+```java
+// 1个接口UserDao
+interface UserDao {
+    public void update();
+}
+// 1个实现类UserDaoImpl
+public class UserDaoImpl implements UserDao {
+    @Override
+    public void update() {
+        System.out.println("UserDaoImpl update....");
+    }
+}
+// 1个普通逻辑类UserService
+public class UserService {
+
+    // UserService内部里使用外部的类
+    private UserDao userDao;
+
+    public void setUserDao(UserDao userDao) {
+        this.userDao = userDao;
+    }
+
+    public void add() {
+        System.out.println("UserService add....");
+        userDao.update();
+    }
+}
+// 1个测试类TestUserImpl
+public class TestUserImpl {
+
+    @Test
+    public void testUserImpl() {
+        try (
+            ClassPathXmlApplicationContext context = 
+            new ClassPathXmlApplicationContext("bean1.xml");
+        ) {
+            UserService us = context.getBean("userService", UserService.class);
+            us.add();
+        }
+    }
+}
+// 1个xml配置文件
+<bean id="userService" class="com.spring.demo1.UserService">
+  	<!-- 在Service里注入userDao的对象 -->
+  	<!-- name 属性:类里面属性名称 -->
+    <!-- ref 属性:创建 userDao 对象 bean 标签 id 值 -->
+      <property name="userDao" ref="userDaoImpl"></property>
+      </bean>
+     <!-- 这里的对象不是Dao而是Impl 因为接口没有对象 -->
+      <bean id="userDaoImpl" class="com.spring.demo1.UserDaoImpl"></bean>
+```
+
