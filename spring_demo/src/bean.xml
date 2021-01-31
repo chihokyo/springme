@@ -13,6 +13,10 @@
         <bean id="animal" class="com.spring.demo.Animal">
             <property name="aniname" value="mao"></property>
             <property name="aniage" value="100"></property>
+            
+            <property name="anicolor">
+                <value><![CDATA[<红色>]]></value>
+            </property>
         </bean>
 
         <!-- 配置 Flower 对象创建 -->
