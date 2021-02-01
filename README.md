@@ -681,3 +681,165 @@ public class MyBean implements FactoryBean<Course> {
 }
 
 ```
+
+### Bean作用域
+
+- 设置创建 **bean** 实例是单实例还是多实例
+
+- **Spring** 里面，默认情况下，**bean** 是单实例对象
+
+验证代码
+
+说明创建的实例都是一样的 单实例
+
+```java
+public class TestStudent {
+    
+    @Test
+    public void testStudent() {
+        try (
+            ClassPathXmlApplicationContext context = 
+                new ClassPathXmlApplicationContext("bean3.xml");
+        ) {
+            Student s1 = context.getBean("student", Student.class);
+            Student s2 = context.getBean("student", Student.class);
+            System.out.println(s1 == s2); // true
+        }
+    }
+}
+```
+
+##### 多实例如何设置
+
+在xml里使用scope属性
+
+- singleton 单实例 默认设置 加载配置文件就会创建
+- prototype 多实例 只有在调用`getBean()`才会创建多实例对象
+
+```xml
+<bean id="student" class="com.spring.demo3.Student" scope="prototype"></bean>
+System.out.println(s1 == s2); // false
+```
+
+除了上面的俩，scope还有俩对象 request session 这俩的作用就是创建对象的时候自动加入到requst和session
+
+#### Bean的生命周期
+
+##### 五步走生命周期
+
+- 通过构造器创建 bean 实例(无参数构造) → 构造器创建
+- 为 bean 的属性设置值和对其他 bean 引用(调用 set 方法) → set方法调用
+- 调用 bean 的初始化的方法(需要进行配置初始化的方法) → 初始化方法xml要注意
+- bean 可以使用了(对象获取到了) →  正常使用
+-  当容器关闭时候，调用 bean 的销毁的方法(需要进行配置销毁的方法) → 销毁xml要注意
+
+```java
+// BeanLife类
+public class BeanLife {
+
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        System.out.println("第二步 调用 set 方法设置属性值 setName(String name)");
+    }
+
+    public BeanLife() {
+        System.out.println("第一步 执行无参数构造创建 bean 实例 BeanLife()");
+    }
+    
+    public void initMethod() {
+        System.out.println("第三步 执行初始化的方法 initMethod()");
+    }
+    
+    public void destoryMethod(){
+        System.out.println("第五步 执行销毁的方法destoryMethod()");
+    }
+}
+// xml配置文件
+<bean id="beanLife" class="com.spring.demo4.BeanLife" init-method="initMethod" destroy-method="destoryMethod">
+  <property name="name" value="BeanLife Yeah~~"></property>
+</bean>
+// 测试文件
+public void testBeanLife() {
+       try (
+        ClassPathXmlApplicationContext context = 
+            new ClassPathXmlApplicationContext("bean4.xml");
+       ) {
+           BeanLife bl = context.getBean("beanLife", BeanLife.class);
+           System.out.println("第四步 获取创建 bean 实例对象");
+           System.out.println(bl);
+       }
+}
+
+    // 第二步 调用 set 方法设置属性值 setName(String name)
+    // 第三步 执行初始化的方法 initMethod()
+    // 第四步 获取创建 bean 实例对象
+    // com.spring.demo4.BeanLife@131774fe
+    // 第五步 执行销毁的方法destoryMethod()
+```
+
+##### 七步走生命周期（5+2个后置处理器）
+
+其实就是比上面多了2个后置处理器，这个后置处理器需要在xml里面配置，并且需要实现一个接口*BeanPostProcessor*
+
+这个接口有俩方法。一个在初始化之前执行，一个在初始化之后执行。
+
+- 通过构造器创建 bean 实例(无参数构造)
+- 为 bean 的属性设置值和对其他 bean 引用(调用 set 方法)
+- **<u>把 bean 实例传递 bean 后置处理器的方法 postProcessBeforeInitialization</u>** → 新增 初始化之前
+- 调用 bean 的初始化的方法(需要进行配置初始化的方法)
+- **<u>把 bean 实例传递 bean 后置处理器的方法 postProcessAfterInitialization</u>** → 新增 初始化之后
+- bean 可以使用了(对象获取到了)
+- 当容器关闭时候，调用 bean 的销毁的方法(需要进行配置销毁的方法)
+
+```java
+public class BeanLife  implements BeanPostProcessor {
+
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        System.out.println("第二步 调用 set 方法设置属性值 setName(String name)");
+    }
+
+    public BeanLife() {
+        System.out.println("第一步 执行无参数构造创建 bean 实例 BeanLife()");
+    }
+    
+    public void initMethod() {
+        System.out.println("第三步 执行初始化的方法 initMethod()");
+    }
+    
+    public void destoryMethod(){
+        System.out.println("第五步 执行销毁的方法destoryMethod()");
+    }
+
+    @Override
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        System.out.println("在初始化之前执行的方法 Before...");
+        return BeanPostProcessor.super.postProcessBeforeInitialization(bean, beanName);
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        System.out.println("在初始化之后执行的方法 After...");
+        return BeanPostProcessor.super.postProcessAfterInitialization(bean, beanName);
+    }
+}
+
+// xml配置
+<!-- 配置后置处理器 效果是全局的这里的xml所有的对象都适用-->
+<bean id="beanLife" class="com.spring.demo4.BeanLife" init-method="initMethod" destroy-method="destoryMethod">
+  <property name="name" value="BeanLife Yeah~~"></property>
+</bean>
+```
+

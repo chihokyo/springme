@@ -17,6 +17,10 @@ public class TestStudent {
             System.out.println(s);
             // { stucourses='[Ljava.lang.String;@4135c3b', stulist='["1", "2", "3"]'
             // , stumaps='{java=JAVA, js=JS, python=python}', stusets='[Mysql, MongoDB]'}
+
+            Student s1 = context.getBean("student", Student.class);
+            Student s2 = context.getBean("student", Student.class);
+            System.out.println(s1 == s2); // true
         }
     }
 }

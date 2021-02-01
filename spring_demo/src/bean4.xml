@@ -7,4 +7,9 @@
                            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
                          
        <bean id="myBean" class="com.spring.demo4.MyBean"></bean>
+       <bean id="beanLife" class="com.spring.demo4.BeanLife" init-method="initMethod" destroy-method="destoryMethod">
+           <property name="name" value="BeanLife Yeah~~"></property>
+       </bean>
+
+       <!-- 配置后置处理器 效果是全局的这里的xml所有的对象都适用-->
 </beans>
