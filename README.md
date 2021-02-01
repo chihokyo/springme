@@ -613,3 +613,71 @@ xml配置文件 记得新建俩对象
 
 ```
 
+IoC操作Bean（FactoryBean）
+
+在Spring里面有2种Bean
+
+- 自己弄的普通Bean
+
+  - **Bean的class定义什么类型，返回的就是什么类型。**
+
+    `<bean id="userDaoImpl" class="com.spring.demo1.UserDaoImpl">`
+
+- 工厂Bean （FactoryBean）
+
+  - **配置文件中定义的类型可以和返回类型不一样。**
+
+如何写一个工厂Bean
+
+步骤1 普通类实现一个接口
+
+步骤2 重写接口里的方法
+
+步骤3 xml里正常写
+
+步骤4 测试的时候记得要转换成你想要的那个对象类型
+
+```java
+// 步骤1 普通类实现一个接口 & 步骤2 重写接口里的方法
+public class MyBean implements FactoryBean<Course> {
+
+    // 定义的对象和返回的对象不一致，就是这个方法决定的
+    // 定义返回Bean 默认是Object 所以使用泛型返回你想要的Bean
+    @Override
+    public Course getObject() throws Exception {
+        // 这里应该用反射的 为了方便 直接new
+        Course course = new Course();
+        course.setCname("Japanese");
+        return course;
+    }
+
+    @Override
+    public Class<?> getObjectType() {
+        return null;
+    }
+}
+// 步骤3 xml里正常写
+<bean id="myBean" class="com.spring.demo4.MyBean"></bean>
+  
+// 步骤4 测试的时候记得要转换成你想要的那个对象类型
+ public class TestMyBean {
+
+    @Test
+    public void testMybean() {
+        try (
+            ClassPathXmlApplicationContext context = 
+                new ClassPathXmlApplicationContext("bean4.xml");
+        ) {
+            // 普通Bean
+            // MyBean mb = context.getBean("myBean", MyBean.class);
+
+            // 定义对象和返回对象不一致的Bean 
+            // xml定义的是  <bean id="myBean" class="com.spring.demo4.MyBean"></bean>
+            // 返回的是 Course
+            Course course = context.getBean("myBean", Course.class);
+            System.out.println(course); // com.spring.demo3.Course@41fbdac4
+        }    
+    }
+}
+
+```
