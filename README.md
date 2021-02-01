@@ -2,7 +2,7 @@
 
 开始学习Spring 嘻嘻
 
-## 小试牛刀
+## 1. 小试牛刀
 
 - 新建一个空项目
 - 导入*_jar*下的所有jar包
@@ -66,7 +66,7 @@ public class TestUser {
 
 **以上 Over 🎉**
 
-## IoC
+## 2. IoC
 
 IoC = Inversion of Cotnrol
 
@@ -76,7 +76,7 @@ IoC = Inversion of Cotnrol
 - 底层实现原理  → **xml解析 + 工厂模式 + 反射**
 - 进化过程 ↓
 
-### 进化过程
+### 2-1 进化过程
 
 1. 原始方式 **耦合度太高了**
 
@@ -122,7 +122,7 @@ class Factory{
 
 `<bean id="user" class="com.spring.demo.User"></bean>` 就可以。
 
-### IoC接口体系原理
+### 2-2 IoC接口体系原理
 
 **<u>IoC思想基于容器，容器底层本质就是对象工厂。</u>**
 
@@ -132,7 +132,7 @@ class Factory{
 
 `ApplicationContext` 是`BeanFactory`的子接口。提供更多的功能。加载配置文件之后对象就创建了。
 
-### Bean管理
+### 2-3 xml的Bean管理
 
 #### **什么是Bean管理？**
 
@@ -152,7 +152,7 @@ public class User {
 }
 ```
 
-#### **IoC操作Bean有哪些方式？**
+## **3. IoC操作Bean之「XML」**
 
 基于xml方式创建对象
 
@@ -171,7 +171,7 @@ public class User {
 
 基于xml方式注入属性
 
-**DI** 依赖注入 本质就是注入属性 DI是IoC的一种表现形式。
+**DI** <u>Dependency Injection</u> 依赖注入 本质就是注入属性 DI是IoC的一种表现形式。
 
 以前有哪些属性注入的呢 set方法注入，构造器有参注入
 
@@ -246,9 +246,9 @@ p名称空间注入，就是为了简化xml配置。
 
 `<bean id="flower" class="com.spring.demo.Flower" p:smell="Yeah!" p:price="99">`
 
-#### 其他类型
+### 3-1 注入其他其他类型
 
-#####  **字面量**
+####  **字面量**
 
 - null `<property name="anicolor"><null></null></property>`
 - 特殊符号 方法1 转义 方法2 CDATA
@@ -267,7 +267,7 @@ p名称空间注入，就是为了简化xml配置。
 </property>
 ```
 
-##### **注入属性 外部bean**
+### 3-2 **注入属性 外部bean**
 
 注意主要其实是通过了 
 
@@ -341,7 +341,7 @@ public class TestUserImpl {
       <bean id="userDaoImpl" class="com.spring.demo1.UserDaoImpl"></bean>
 ```
 
-**注入属性 内部bean**
+### 3-3 **注入属性 内部bean**
 
 在两个类中有包含关系的时候会用到内部bean注入。
 
@@ -448,7 +448,7 @@ public class Employee {
 
 ```
 
-**注入属性 内部bean-级联赋值**
+#### **注入属性 内部bean-级联赋值**
 
 方法1 主要其实就是xml文件和上面对比一下就知道
 
@@ -486,7 +486,7 @@ public class Employee {
 </bean>
 ```
 
-##### 注入集合属性
+### 3-4 注入集合属性
 
 - xml配置文件
 
@@ -585,7 +585,7 @@ xml配置文件 记得新建俩对象
 </bean>
 ```
 
-##### 提取公共集合属性
+#### 提取公共集合属性
 
 - 在 spring xml配置文件中引入名称空间 util
 - 使用 util 标签完成 list 集合注入提取
@@ -682,7 +682,7 @@ public class MyBean implements FactoryBean<Course> {
 
 ```
 
-### Bean作用域
+### 3-5 Bean作用域
 
 - 设置创建 **bean** 实例是单实例还是多实例
 
@@ -709,7 +709,7 @@ public class TestStudent {
 }
 ```
 
-##### 多实例如何设置
+#### 多实例如何设置
 
 在xml里使用scope属性
 
@@ -723,9 +723,9 @@ System.out.println(s1 == s2); // false
 
 除了上面的俩，scope还有俩对象 request session 这俩的作用就是创建对象的时候自动加入到requst和session
 
-#### Bean的生命周期
+### 3-6 Bean的生命周期
 
-##### 五步走生命周期
+#### 五步走生命周期
 
 - 通过构造器创建 bean 实例(无参数构造) → 构造器创建
 - 为 bean 的属性设置值和对其他 bean 引用(调用 set 方法) → set方法调用
@@ -783,7 +783,7 @@ public void testBeanLife() {
     // 第五步 执行销毁的方法destoryMethod()
 ```
 
-##### 七步走生命周期（5+2个后置处理器）
+#### 七步走生命周期（5+2个后置处理器）
 
 其实就是比上面多了2个后置处理器，这个后置处理器需要在xml里面配置，并且需要实现一个接口*BeanPostProcessor*
 
@@ -843,7 +843,7 @@ public class BeanLife  implements BeanPostProcessor {
 </bean>
 ```
 
-#### Bean属性自动装配
+### 3-7 Bean属性自动装配
 
 实际中很少适用，一般都用注解。
 
@@ -866,6 +866,33 @@ public class BeanLife  implements BeanPostProcessor {
 </bean>
 <bean id="dept" class="com.spring.demo2.Depart">
   <property name="dname" value="Manager"></property>
+</bean>
+```
+
+> 引入外部属性文件
+>
+> 步骤1 引入包
+>
+> 步骤2 写xml文件 ↓有
+>
+> 步骤3 写jdbc.properties文件
+
+```xml
+<!-- 直接配置连接池  -->
+<!-- <bean id="dataSource" class="com.druid.pool.DruidDataSource">
+            <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+            <property name="url" value="jdbc:mysql://localhost:3306/test"></property>
+            <property name="username" value="root"></property>
+            <property name="password" value="root"></property>
+       </bean> -->
+
+<!-- 引入外部属性文件 -->
+<context:property-placeholder location="classpath:jdbc./jdbc.properties"/>
+<bean id="dataSource" class="com.druid.pool.DruidDataSource">
+  <property name="driverClassName" value="${prop.driverClass}"></property>
+  <property name="url" value="${prop.url}"></property>
+  <property name="username" value="${prop.user}"></property>
+  <property name="password" value="${prop.password}"></property>
 </bean>
 ```
 
