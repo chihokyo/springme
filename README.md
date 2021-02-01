@@ -843,3 +843,29 @@ public class BeanLife  implements BeanPostProcessor {
 </bean>
 ```
 
+#### Bean属性自动装配
+
+实际中很少适用，一般都用注解。
+
+什么是自动装配？根据制定规则装备规则（名称or类型），Spring将自动匹配的属性值注入进去。
+
+```xml
+<!-- 手动装配 指定 dept注入值 -->
+<bean id="employee" class="com.spring.demo2.Employee">
+   <property name="dept" ref="dept"></property>
+</bean>
+<bean id="dept" class="com.spring.demo2.Depart">
+  <property name="dname" value="Manager"></property>
+</bean>
+<!-- 自动装配 指定 dept注入值 -->
+<!--  autowire="byName" 名字 这个名称要和对象id一致。配置自动装配-->
+<!--  autowire="byType" 类型 配置自动装配 -->
+<bean id="employee" class="com.spring.demo2.Employee" autowire="byName">
+  <property name="ename" value="Tom"></property>
+  <property name="gender" value="女"></property>
+</bean>
+<bean id="dept" class="com.spring.demo2.Depart">
+  <property name="dname" value="Manager"></property>
+</bean>
+```
+
