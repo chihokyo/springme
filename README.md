@@ -896,3 +896,80 @@ public class BeanLife  implements BeanPostProcessor {
 </bean>
 ```
 
+## **3. IoC操作Bean之「注解」**
+
+> 1. 什么是注解？**就是一些有含义的特殊标记。**
+>
+> 形式 →`@注解（属性name=属性value）` 
+>
+> 2. 注解可以在哪里？**类，属性，方法。**
+>
+> 注解的目的是什么？**为了让配置更加简洁，简化xml配置。**
+>
+> 3. Bean管理有哪些注解？以下4个都可以创建实例。
+>
+> - Component → 普通注解
+> - Service→ 业务逻辑层
+> - Controller→ web层
+> - Repository → 持久层上面
+>
+> **虽然主要用在不同的层，但其实互相都可以用。上面4个注解功能都是一样。都可以用来创建Bean对象。**
+
+### 基于注解方式实现Bean对象创建步骤
+
+> **步骤1** 引入AOP依赖 `spring-aop-5.2.6.RELEASE.jar`
+>
+> **步骤2** xml配置文件开启组件扫描（什么是组件扫描，告诉容器在哪里类加了注解，指定了扫描位置。）
+>
+>  - 引入context名称空间
+>  - 开启组件扫描
+>
+> `<context:component-scan base-package="扫描的包"></context:component-scan>`
+>
+> 1 多个扫描的包可以用逗号隔开。 `com.a.b,com.a.c` 
+>
+> 2 扫描包的上层目录`com.a`
+>
+> **步骤3** 创建类，添加注解注释。
+>
+> 	- 上面4个都可以。*@Component(value="userService")* 类似于。`<Bean id="userService", class="..."/>`
+> 	- 注解里面 value 属性值可以省略不写。不写就是默认是类名小写。
+> 	- 默认值是类名称，首字母小写 UserService → userService
+>
+> **步骤4** 测试类。
+>
+> 现在开始代码演示一下了。
+
+```xml
+<!-- 开启组件扫描 也可以使用具体包逗号分隔开，com.spring.demo1,com.spring.demo2 -->
+<context:component-scan base-package="com.spring"></context:component-scan>
+```
+
+java如下正常些。除了加了注解。
+
+```java
+// 其他三个也可以写Component(value="anoStudent") 默认是类名的首字母小写
+@Component
+public class AnoStudent {
+
+    public void show() {
+        System.out.println("AnoStudent show()...");
+    }
+}
+// 测试类正常写
+public class TestAnoStudent {
+
+    @Test
+    public void testAnoStudent() {
+        try (
+            ClassPathXmlApplicationContext context = 
+                new ClassPathXmlApplicationContext("bean6.xml");
+        ) {
+            AnoStudent as = context.getBean("anoStudent", AnoStudent.class);
+            System.out.println(as);
+            as.show();
+        }
+    }
+}
+```
+
