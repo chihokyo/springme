@@ -998,3 +998,115 @@ public class TestAnoStudent {
   <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
 </context:component-scan>
 ```
+
+### 注解方式实现属性注入
+
+- @AutoWired 根据属性类型
+- @Qualifier 根据属性名称 【这个要和AutoWired 一起使用，用来特定对象是什么】
+- @Resource 类型or名称都可以 是javax并不是Spring包里面的。Spring官方不建议使用。
+
+以上三个都是对象
+
+- @Value → 针对普通类型 
+
+具体代码实现。
+
+步骤1  写一个dao类接口 + 实现类（要有注解）
+
+步骤2 写一个service类 （要有注解）
+
+步骤3 测试写法
+
+```java
+// 接口
+public interface AniDao {
+    public void show();
+}
+
+// 实现类
+// 不写这个value 就是默认首字母小写那种
+@Repository(value = "aaaaa")
+public class AniDaoImpl implements AniDao  {
+    @Override
+    public void show() {
+        System.out.println("AniDaoImpl show...");
+    }
+}
+// service类
+// @Component(value="aniService")
+@Service
+public class AniService {
+    // 不需要set方法
+    // Autowired 属性类型
+    @Autowired
+    // @Qualifier(value = "aaaa") 不写这个value 就是默认首字母小写那种
+    @Qualifier(value = "aaaaa")
+    private AniDao aniDao;
+
+    public void add() {
+        System.out.println("AniService add");
+        aniDao.show();
+    }
+}
+xml就只是开启个扫描而已
+<!-- 开启组件扫描 -->
+<context:component-scan base-package="com.spring"></context:component-scan>
+
+```
+
+**@Resource** 有一个问题就是不属于Spring标准库里面的
+
+```java
+@Resource 默认是属性
+@Resource(name="") 也可以根据名字 
+```
+
+**@Value** 可以注入普通数据类型
+
+```java
+@Value(value="")
+@Service
+public class AniService {
+    
+    @Value(value="1234ab")
+    private String name;
+
+}
+```
+
+#### 完全注解开发
+
+上面的xml 只用了那一行 实在太鸡肋了。
+
+`<context:component-scan base-package="com.spring"></context:component-scan>`
+
+步骤1 创建配置类 替代xml 在任一地方写
+
+```java
+/**
+ * 配置类
+ */
+@Configuration
+@ComponentScan(basePackages = {"com.spring"})
+public class SpringConfig {
+    
+}
+```
+
+步骤2 测试类
+
+```java
+try (
+  // ClassPathXmlApplicationContext context = 
+  //     new ClassPathXmlApplicationContext("bean7.xml");
+
+  // 完全使用注解开发
+  AnnotationConfigApplicationContext context = 
+  new AnnotationConfigApplicationContext(SpringConfig.class);
+
+) {
+  AniService as = context.getBean("aniService", AniService.class);
+  as.add();
+}
+```
+
