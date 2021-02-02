@@ -908,10 +908,10 @@ public class BeanLife  implements BeanPostProcessor {
 >
 > 3. Bean管理有哪些注解？以下4个都可以创建实例。
 >
-> - Component → 普通注解
-> - Service→ 业务逻辑层
-> - Controller→ web层
-> - Repository → 持久层上面
+> - @Component → 普通注解
+> - @Service→ 业务逻辑层
+> - @Controller→ web层
+> - @Repository → 持久层上面
 >
 > **虽然主要用在不同的层，但其实互相都可以用。上面4个注解功能都是一样。都可以用来创建Bean对象。**
 
@@ -973,3 +973,28 @@ public class TestAnoStudent {
 }
 ```
 
+### 组件扫描filter
+
+其实这个就相当于是白名单黑名单的感觉，**1 只扫描XX 2全部扫描除了XX。**这样。
+
+白名单（自己取名的）
+
+```xml
+<!-- 开启组件扫描 白名单（自己取名 官方不用的）-->
+<!-- use-default-filters="false" 表示现在不使用默认 filter，自己配置 filter -->
+<!-- context:include-filter ，设置扫描哪些内容 -->
+<context:component-scan base-package="com.spring" use-default-filters="false">
+  <!-- 比如这里就是只是扫描四大金刚里面的 Controller -->
+  <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+</context:component-scan>
+```
+
+黑名单
+
+```xml
+<!-- 开启组件扫描 黑名单（自己取名 官方不用的）-->
+<!-- context:exclude-filter: 设置哪些内容不进行扫描 -->
+<context:component-scan base-package="com.spring">
+  <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+</context:component-scan>
+```
