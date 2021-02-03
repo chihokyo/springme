@@ -1110,3 +1110,174 @@ try (
 }
 ```
 
+## AOP (Aspect Oriented Programming)
+
+### 什么是AOP？
+
+面向切面编程。软件开发的一个方法。
+
+我理解的就是在不修改原来代码的情况下，增加新的功能。降低耦合度，便于开发。
+
+看了一下日网，**Aspect**翻译成了**横断的**，感觉表达的感觉就是给现有的程序从中间插入进去，横断，的插入了一个新功能。
+
+![SpringFrameworkでAOP(アスペクト指向プログラミング)(Javaアプリケーション)](https://tokkan.net/spring/sp016.png)
+
+### AOP底层原理是？
+
+底层原理就是**动态代理**。
+
+- 有接口的情况下。JDK动态代理。 **创建<u>接口实现类</u>代理对象进行代理。**
+- 没借口的情况下。CGLIB动态代理。**创建<u>当前子类</u>代理对象进行代理。**
+
+##### 先写一个静态代理的例子。
+
+**特点 代理类和被代理类在编译期间已经被确定**
+
+就写一个机器人代替人来工作的例子吧。
+
+```java
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Human h = new Human();
+        Robot r = new Robot(h);
+       // 调用的是代理类的执行方法，实际执行的是被代理类
+        r.work();
+    }
+}
+// 接口定义规范
+interface Earth {
+    void work();
+}
+// 被代理类--人类
+class Human implements Earth {
+    
+    @Override
+    public void work(){
+        System.out.println("Human work...");
+    }
+}
+// 代理人--机器人
+class Robot implements Earth {
+    
+    private Earth earth;
+    public Robot(Earth earth){
+        this.earth = earth;
+    }
+    public void robotCheck(){
+        System.out.println("Robot robotCheck...");
+    }
+    
+    @Override
+    public void work(){
+        robotCheck();
+        earth.work();
+    }
+}
+```
+
+##### 动态代理的例子。
+
+看了这么多动态代理，总结起来就是静态代理的时候不是弄了一个被代理类和代理类吗。
+
+动态代理的话，Java里面有一个类叫*Proxy* 然后这个接口有一个方法可以生成动态代理类的实例，叫*newProxyInstance*
+
+```java
+// 参数1 加载器 参数2 接口 参数3 要实现InvocationHandler 这个接口
+public static Object newProxyInstance(ClassLoader loader,
+                                      Class<?>[] interfaces,
+                                      InvocationHandler h)
+```
+
+现在演示一个通过**动态代理**增加功能的例子。
+
+- 一个接口
+- 一个接口实现类
+- 一个实现动态代理的类
+- 一个测试类
+
+```java
+/**
+ * 接口 Robot
+ */
+public interface DynamicRobot {
+    String getEnergy();
+    void work(String time);
+}
+
+/**
+ * 接口实现类
+ * DynamicRobotImpl
+ */
+public class DynamicRobotImpl implements DynamicRobot {
+
+    @Override
+    public String getEnergy() {
+        return "DynamicRobotImpl getEnergy()...";
+    }
+
+    @Override
+    public void work(String time) {
+        System.out.println("DynamicRobotImpl work" + time);
+    }
+}
+```
+
+这个动态代理实现类是重点，于是我单独写一下
+
+```java
+/**
+ * 实现动态代理需要解决的问题
+ * 动态代理就是根据被代理类而创建代理类和实现方法，那么问题来了。
+ * 问题1 如何根据加载到内存的被代理类，动态的创建一个代理类和对象
+ * 问题2 当通过代理类的对象调用方法a是，如何动态的去调用被代理类的同名方法a
+ */
+public class DynamicProxy {
+	
+  	// 这里的 Object 就是被代理类的对象，通过此方法，就要返回一个代理类的对象 解决问题1
+    // 也就是进入被代理类，出来代理类
+    public static Object getProxyInstance(Object obj) {
+				// getClass() → 返回运行时类
+        // getClassLoader() → 返回类的加载器
+        // 为什么getInterfaces() 要接口，因为被代理类和代理类都要实现同一个接口
+        // 参数1 获取被代理类的类
+        // 参数2 获取被代理的接口
+        // 参数3 解决问题2
+        Myhandler h = new Myhandler(obj);
+
+        return Proxy.newProxyInstance(obj.getClass().getClassLoader(), 
+                obj.getClass().getInterfaces(), h);
+    }
+}
+
+class Myhandler implements InvocationHandler{
+
+    // 进来被代理类
+    private Object obj;
+
+    // 初始化赋值被代理类
+    public Myhandler(Object obj) {
+        this.obj = obj;
+    }
+
+    /**
+     * 
+     * @param proxy 代理类的对象
+     * @param method 代理类调用的方法
+     * @param args 形参列表
+     */
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+
+        System.out.println("增强之前的我是这样的..." + "我的名字是: "+ method.getName() + "我的参数是: "+ Arrays.toString(args));
+
+        // 这个方法的主要作用就是执行代理类的a方法，就会自动执行被代理类的同名a方法 返回值是一个对象
+        Object returnVal = method.invoke(obj, args);
+
+        System.out.println("增强之后的我...");
+
+        return returnVal;
+    }
+}
+
+```
+
