@@ -1110,7 +1110,7 @@ try (
 }
 ```
 
-## AOP (Aspect Oriented Programming)
+## 4. AOP (Aspect Oriented Programming)
 
 ### 什么是AOP？
 
@@ -1280,4 +1280,216 @@ class Myhandler implements InvocationHandler{
 }
 
 ```
+
+### 4-3 术语解释
+
+- 连接点 → joinpoint 类里面那些方法可以被增强 可以被增加的方法
+- 切入点 → pointcut 真正增强的方法 实际上被增强的方法
+- 通知 → advice 实现增强的逻辑部分
+  - 前置
+  - 后置
+  - 异常
+  - 最终
+  - 环绕
+- 切面 aspect → 把通知运用到切入点的过程
+
+**AOP准备工作**
+
+1. AspectJ不是Spring组成部分，是独立的AOP框架。一般 **AspectJ** + **Spring**就可以实现操作
+
+基于 AspectJ 有2种实现方式
+
+- xml
+- 注解
+
+2. 引入相关依赖 *spring-aspects-5.2.6.RELEASE.jar*
+
+事实证明 仅有上面的jar包是不行的。还需要添加以下
+
+```
+com.springsource.net.sf.cglib-2.2.0.jar
+com.springsource.org.aopalliance-1.0.0.jar
+com.springsource.org.aspectj.weaver-1.6.8.RELEASE.jar
+```
+
+3. **切入点表达式【重点】**
+
+```
+作用 知道对哪个类里面的哪个方法进行增强
+语法结构 execution([权限修饰符] [返回类型：可省略] [类全路径] [方法名称]([参数列表]) )
+例子1 对com.spring.demo包里面Student类的show（）方法进行增强
+execution(* com.spring.demo.Student.show(..)) 参数..可以省略 返回类型可以省略
+
+例子2 对com.spring.demo包里面Student类的所有方法进行增强
+execution(* com.spring.demo.Student.*(..))
+
+例子3 对com.spring.demo包里面所有类的所有方法进行增强
+execution(* com.spring.demo.*.*(..))
+```
+
+### AOP具体操作
+
+#### 基于注解
+
+> 步骤1 创建被增强类，在类面定义方法
+>
+> 步骤2 创建增强类，书写增强逻辑
+>
+> 步骤3 xml配置一下
+
+以上就是准备工作，写完之后应该是这样的。
+
+```java
+/**
+ * 被增强类 User 用来验证AOP Aspect注解
+ */
+public class AopAnoUser {
+    
+    public void show() {
+        System.out.println("AopAnoUser show()...");
+    }
+}
+/**
+ * 增强类
+ */
+public class EnhanceAopAnoUser {
+    // 前置通知
+    public void beforeAno() {
+        System.out.println("beforeAno()");
+    }
+    // 后置通知
+    public void afterAno() {
+        System.out.println("afterAno()");
+    }
+}
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+     <!-- 开启组件扫描 -->
+     <context:component-scan base-package="com.spring.aopannotion"></context:component-scan>
+     <!-- 开启Aspect生成代理对象 其实本质就是寻找是否有 Aspect注解 找到之后生成代理对象 -->
+     <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+</beans>
+
+```
+
+准备工作完成之后开始增强了！！
+
+```java
+
+```
+
+通知的顺序问题
+
+| 通知           | 执行时机                                                     | 备注 |
+| -------------- | ------------------------------------------------------------ | ---- |
+| Before         | **前置通知**:在原来方法之前执行                              |      |
+| AfterReturning | **后置通知**:在原来的方法之后执行。特点:可以得到被增强方法的返回值。 |      |
+| After          | **最终通知**:指的是无论是否有异常，总是被执行。              |      |
+| AfterThrowing  | **异常通知**:目标方法出现异常执行，如果方法没有异常，不会执行。特点:可以获得异常的信息。 |      |
+| Around         | **环绕通知**:在方法之前和方法之后执行。                      |      |
+
+```
+环绕之前....
+前置通知@Before beforeAno()...
+AopAnoUser show()...
+环绕之后....
+最终通知@After afterAno()...
+后置通知@AfterReturning afterReturningAno()...
+
+如果在被增强的方法内部发生了异常
+环绕之前....
+前置通知@Before beforeAno()...
+最终通知@After afterAno()...
+异常通知@AfterThrowing afterThrowingAno()...
+
+结论也就是 
+环绕之后....
+AfterReturning没执行
+也就是说After 类似于 finally
+```
+
+#### 抽取公共的切入点
+
+为什么要抽取呢。因为你看上面的代码，每一次切入点的时候都写一堆的那玩意儿多烦躁。
+
+所以这样也可以设置
+
+```java
+// 抽取相同的切入点设置 
+// 不想写这一坨
+// value = "execution(* com.spring.aopannotion.AopAnoUser.show(..))"
+@Pointcut(value = "execution(* com.spring.aopannotion.AopAnoUser.show(..))")
+public void pointCut() {
+
+}
+    
+// 前置通知
+// Before 注解表示前置通知 这个() 不能忘记啊 毕竟是个方法
+@Before(value = "pointCut()")
+public void beforeAno() {
+  System.out.println("前置通知@Before beforeAno()...");
+}
+```
+
+#### 多个增强类，设置个优先级。
+
+比如又来了一个增强类 那么谁优先呢。？
+
+可以通过在类上指定order，order越小越是最先执行。
+
+```java
+// 为了验证 新建一个增强类
+@Component
+@Aspect
+@Order(1)
+public class EnhanceAopAnoUserMore {
+    
+    @Before(value = "execution(* com.spring.aopannotion.AopAnoUser.show(..))")
+    public void beforeAnoMore() {
+        System.out.println("EnhanceAopAnoUserMore @Before beforeAnoMore()");
+    }
+}
+```
+
+#### 完全注解开发
+
+意思就是说，不需要xml了。全部注解。
+
+大概是这样子 创建配置类
+
+```java
+@Configuration
+@ComponentScan(basePackages = {"com.spring"})
+// 替代品 默认是true <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+@EnableAspectJAutoProxy(proxyTargetClass = true)
+public class ConfigAop {
+    
+}
+// 测试类
+public void testEnhanceAopAnoUser() {
+        try (
+            // ClassPathXmlApplicationContext context = 
+            //     new ClassPathXmlApplicationContext("bean8.xml");
+
+            // 完全使用注解开发
+            AnnotationConfigApplicationContext context = 
+                new AnnotationConfigApplicationContext(ConfigAop.class);
+        ) {
+            AopAnoUser aau = context.getBean("aopAnoUser", AopAnoUser.class);
+            aau.show();
+        }
+    }
+```
+
+
 
