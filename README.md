@@ -1300,7 +1300,7 @@ class Myhandler implements InvocationHandler{
 基于 AspectJ 有2种实现方式
 
 - xml
-- 注解
+- 注解 **<u>一般使用注解</u>**
 
 2. 引入相关依赖 *spring-aspects-5.2.6.RELEASE.jar*
 
@@ -1317,6 +1317,7 @@ com.springsource.org.aspectj.weaver-1.6.8.RELEASE.jar
 ```
 作用 知道对哪个类里面的哪个方法进行增强
 语法结构 execution([权限修饰符] [返回类型：可省略] [类全路径] [方法名称]([参数列表]) )
+
 例子1 对com.spring.demo包里面Student类的show（）方法进行增强
 execution(* com.spring.demo.Student.show(..)) 参数..可以省略 返回类型可以省略
 
@@ -1491,5 +1492,44 @@ public void testEnhanceAopAnoUser() {
     }
 ```
 
+#### 基于XML配置文件
 
+这个只是了解，很少使用。
+
+了解一下步骤就可以
+
+> - 创建增强类和被增强类，创建方法
+> - **Spring**配置文件中创建两个类对象
+> - 在 **Spring** xml配置文件中配置切入点
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+     
+     <!-- 创建对象 -->
+     <bean id="book" class="com.spring.aopxml.BookXml"></bean>
+     <bean id="enhancebook" class="com.spring.aopxml.EnhanceBookXml"></bean>
+
+     <!-- 配置aop增强 -->
+     <aop:config>
+          <!-- 配置切入点 -->
+          <!-- 1切入点表达式 -->
+          <aop:pointcut id="p" expression="execution(* com.spring.aopxml.BookXml.buy(..))" />
+          <!-- 2切面 -->
+          <aop:aspect ref="enhancebook">
+               <!-- 增强作用在哪里 -->
+               <aop:before method="beforeBuyBook" pointcut-ref="p"/>
+          </aop:aspect>
+     </aop:config>
+
+</beans>
+```
+
+![](https://raw.githubusercontent.com/chihokyo/image_host/master/20210209232034.png)
 
