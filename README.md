@@ -1541,7 +1541,7 @@ public void testEnhanceAopAnoUser() {
 
 #### 相关步骤
 
-1 配置连接池
+##### 1 配置连接池
 
 ```
 prop.username=root
@@ -1549,8 +1549,6 @@ prop.password=root
 prop.url=jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true
 prop.driverClass=com.mysql.cj.jdbc.Driver
 ```
-
-这里写
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -1593,13 +1591,13 @@ prop.driverClass=com.mysql.cj.jdbc.Driver
 </beans>
 ```
 
-2 引入相关jar包
+##### 2 引入相关jar包
 
-3.写java文件
+##### 3.写java文件
 
 - UserDao接口 → 象征性写方法
 - UserDaoImpl实现类 → 实现方法&注入*JdbcTemplate*&写逻辑
-- UserService → 注入UserDao 相当于连接dao和实体类
+- UserService → 注入UserDao 相当于连接dao和实体类 **最后测试的时候使用的还是这个 把userDao导入** 
 - User → 实体类
 - 测试类UserTest
 
@@ -1761,4 +1759,68 @@ public class TestUser {
     }
 }
 ```
+
+#### 其他操作（更新&删除&查询操作）
+
+- 更新删除 → *update*
+- 查询操作 → *Integer count = jdbcTemplate.queryForObject(sql, Integer.class);* 注意这里的参数是一个需要返回什么类型，参数就要用那个类型的对象
+- 查询操作（返回对象）→ *jdbcTemplate.**queryForObject**(sql, new **BeanPropertyRowMapper<User>(User.class), id);*** 注意接口
+- 查询操作（返回列表）→ *jdbcTemplate.**query**(sql, new **BeanPropertyRowMapper**<User>(User.class));* 注意接口。
+
+```java
+// 实现更新操作
+    @Override
+    public void update(User user) {
+        String sql = "update user set id=?,name=?,password=?,address=?,phone=? where id=?";
+        Object[] args = { user.getId(), user.getName(), user.getPassword(), user.getAddress(), user.getPhone(),
+                user.getId() };
+        int result = jdbcTemplate.update(sql, args);
+        if (result != 0) {
+            System.out.println("success");
+        } else {
+            System.out.println("error");
+        }
+    }
+
+    // 实现删除操作
+    @Override
+    public void delete(int id) {
+        String sql = "delete from user where id=?";
+        int result = jdbcTemplate.update(sql, id);
+        if (result != 0) {
+            System.out.println("success");
+        } else {
+            System.out.println("error");
+        }
+    }
+
+    // 实现查询数据操作
+    @Override
+    public int selectCount(User user) {
+        String sql = "select count(*) from user";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        return count;
+    }
+
+    // 查询单个数据-返回对象
+    @Override
+    public User findUser(int id) {
+        String sql = "select * from user where id=?";
+        User user = jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<User>(User.class), id);
+        return user;
+    }
+
+    // 查询单个数据-返回集合
+    @Override
+    public List<User> findAllUsers() {
+        String sql = "select * from user";
+        List<User> userList = jdbcTemplate.query(sql, new BeanPropertyRowMapper<User>(User.class));
+        return userList;
+    }
+
+```
+
+感觉总结一下。其实就是什么吧。
+
+**学会框架 + 调用API**
 

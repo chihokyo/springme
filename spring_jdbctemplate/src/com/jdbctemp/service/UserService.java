@@ -1,5 +1,7 @@
 package com.jdbctemp.service;
 
+import java.util.List;
+
 import com.jdbctemp.dao.UserDao;
 import com.jdbctemp.entity.User;
 
@@ -23,5 +25,17 @@ public class UserService {
 
     public void deleteUser(int id) {
         userDao.delete(id);
+    }
+
+    public int findCount(User user) {
+        return userDao.selectCount(user);
+    }
+
+    public User findUserObject(int id) {
+        return userDao.findUser(id);
+    }
+
+    public List<User> findUserList() {
+        return userDao.findAllUsers();
     }
 }

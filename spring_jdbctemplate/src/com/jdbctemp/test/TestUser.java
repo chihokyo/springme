@@ -1,5 +1,7 @@
 package com.jdbctemp.test;
 
+import java.util.List;
+
 import com.jdbctemp.entity.User;
 import com.jdbctemp.service.UserService;
 
@@ -59,6 +61,49 @@ public class TestUser {
            // 删除
            int id = 9;
            userService.deleteUser(id);
+        }
+    }
+
+    @Test
+    public void testfindCount() {
+        try (
+            ClassPathXmlApplicationContext context = 
+                new ClassPathXmlApplicationContext("bean.xml");
+        ) {
+            UserService userService = context.getBean("userService",UserService.class);
+            
+            User user = new User();
+            int result = userService.findCount(user);
+            System.out.println("user:" + result + "条数据");
+        }
+    }
+
+    @Test
+    public void testfindUserObject() {
+        try (
+            ClassPathXmlApplicationContext context = 
+                new ClassPathXmlApplicationContext("bean.xml");
+        ) {
+            UserService userService = context.getBean("userService",UserService.class);
+            int id = 1;
+            User user = userService.findUserObject(id);
+            System.out.println(user.toString());
+            
+        }
+    }
+
+    @Test
+    public void testfindUserList() {
+        try (
+            ClassPathXmlApplicationContext context = 
+                new ClassPathXmlApplicationContext("bean.xml");
+        ) {
+            UserService userService = context.getBean("userService",UserService.class);
+            List<User> userList = userService.findUserList();
+            for (User user : userList) {
+                System.out.println(user);
+            }
+            
         }
     }
 }
