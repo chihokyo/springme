@@ -26,4 +26,29 @@ public class UserDaoImpl implements UserDao {
             System.out.println("error");
         }
     }
+
+    // 实现更新操作
+    @Override
+    public void update(User user) {
+        String sql = "update user set id=?,name=?,password=?,address=?,phone=? where id=?";
+        Object[] args = {user.getId(), user.getName(), user.getPassword(), 
+            user.getAddress(), user.getPhone(), user.getId()};
+        int result = jdbcTemplate.update(sql, args);
+        if (result != 0) {
+            System.out.println("success");
+        } else {
+            System.out.println("error");
+        }
+    }
+
+    @Override
+    public void delete(int id) {
+        String sql = "delete from user where id=?";
+        int result = jdbcTemplate.update(sql, id);
+        if (result != 0) {
+            System.out.println("success");
+        } else {
+            System.out.println("error");
+        }
+    }
 }
