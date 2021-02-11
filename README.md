@@ -1533,3 +1533,232 @@ public void testEnhanceAopAnoUser() {
 
 ![](https://raw.githubusercontent.com/chihokyo/image_host/master/20210209232034.png)
 
+### 5. JdbcTemplate
+
+其实就是对JDBC的进一步封装。
+
+`JDBC + Spring（进一步封装）= JdbcTemplate`
+
+#### 相关步骤
+
+1 配置连接池
+
+```
+prop.username=root
+prop.password=root
+prop.url=jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true
+prop.driverClass=com.mysql.cj.jdbc.Driver
+```
+
+这里写
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context 
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           ">
+    
+    
+    <!-- 开启组件扫描 -->
+    <context:component-scan base-package="com.jdbctemp"></context:component-scan>
+
+    <!-- 加载配置文件 -->
+    <context:property-placeholder location="classpath:jdbc.properties" />
+    <!-- 数据库连接池 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">
+        <property name="driverClassName" value="${prop.driverClass}"></property>
+        <property name="username" value="${prop.username}"></property>
+        <property name="password" value="${prop.password}"></property>
+        <property name="url" value="${prop.url}"></property>
+    </bean>
+    <!-- <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>
+        <property name="username" value="root"></property>
+        <property name="password" value="root"></property>
+        <property name="url" value="jdbc:mysql:///test"></property>
+    </bean> -->
+
+    <!-- jdbTemplate对象 -->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <!-- 注入 dataSource -->
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+</beans>
+```
+
+2 引入相关jar包
+
+3.写java文件
+
+- UserDao接口 → 象征性写方法
+- UserDaoImpl实现类 → 实现方法&注入*JdbcTemplate*&写逻辑
+- UserService → 注入UserDao 相当于连接dao和实体类
+- User → 实体类
+- 测试类UserTest
+
+*UserDao.java*
+
+```java
+package com.jdbctemp.dao;
+
+import com.jdbctemp.entity.User;
+
+public interface UserDao {
+    void add(User user);
+}
+```
+
+*UserDaoImpl*
+
+```java
+package com.jdbctemp.dao;
+
+import com.jdbctemp.entity.User;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class UserDaoImpl implements UserDao {
+
+    // JdbcTemplate 因为要在这里实现数据库操作
+    @Autowired
+    private JdbcTemplate jdbcTemplate; 
+
+    // 实现添加操作
+    @Override
+    public void add(User user) {
+        String sql = "insert into user values(?,?,?,?,?)";
+        Object[] args = {user.getId(), user.getName(), user.getPassword(), 
+                        user.getAddress(), user.getPhone()};
+        int update = jdbcTemplate.update(sql, args);
+        if (update != 0) {
+            System.out.println("success");
+        } else {
+            System.out.println("error");
+        }
+    }
+}
+```
+
+*UserService*
+
+```java
+package com.jdbctemp.service;
+
+import com.jdbctemp.dao.UserDao;
+import com.jdbctemp.entity.User;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+
+    // 注入dao
+    @Autowired
+    private UserDao userDao; 
+
+    public void addUser(User user) {
+        userDao.add(user);
+    }
+}
+```
+
+*User*
+
+```java
+package com.jdbctemp.entity;
+
+public class User {
+    
+    private int id;
+    private String name;
+    private String password;
+    private String address;
+    private String phone;
+
+
+    public int getId() {
+        return this.id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getAddress() {
+        return this.address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getPhone() {
+        return this.phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+}
+```
+
+测试类
+
+```java
+package com.jdbctemp.test;
+
+import com.jdbctemp.entity.User;
+import com.jdbctemp.service.UserService;
+
+import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class TestUser {
+    
+    @Test
+    public void testAddUser(){
+        try (
+            ClassPathXmlApplicationContext context = 
+                new ClassPathXmlApplicationContext("bean.xml");
+        ) {
+            UserService userService = context.getBean("userService",UserService.class);
+            User user = new User();
+            user.setId(9);
+            user.setName("Amy2");
+            user.setPassword("password");
+            user.setAddress("151-0053 ");
+            user.setPhone("111111");
+            userService.addUser(user);
+        }
+    }
+}
+```
+
