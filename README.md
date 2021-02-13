@@ -1824,3 +1824,61 @@ public class TestUser {
 
 **学会框架 + 调用API**
 
+#### 批量操作
+
+批量操作 其实就是一个API *batchUpdate(String sql, List<Object[]> batchArgs)*
+
+```java
+public int[] batchUpdate(String sql, List<Object[]> batchArgs) throws DataAccessException {
+		return batchUpdate(sql, batchArgs, new int[0]);
+	}
+```
+
+感觉和上面写的差不多 就直接写一个把
+
+```java
+// Service
+// 批量添加User
+public void batchAdd(List<Object[]> batchArgs) {
+  userDao.batchAddUsers(batchArgs);
+}
+
+// 批量更新User
+public void batchUpdate(List<Object[]> batchArgs) {
+  userDao.batchUpdateUser(batchArgs);
+}
+
+// 批量删除User
+public void batchDelete(List<Object[]> batchArgs) {
+  userDao.batchDeleteUser(batchArgs);
+}
+
+// 实现Impl
+// 批量添加数据User
+@Override
+public void batchAddUsers(List<Object[]> batchArgs) {
+  String sql = "insert into user values(?,?,?,?,?)";
+  // 底层的话会给你遍历Object
+  int[] result = jdbcTemplate.batchUpdate(sql, batchArgs);
+  System.out.println(Arrays.toString(result));
+}
+
+// 批量更新数据User
+@Override
+public void batchUpdateUser(List<Object[]> batchArgs) {
+  String sql = "update user set name=?,password=?,address=?,phone=? where id=?";
+  // 底层的话会给你遍历Object
+  int[] result = jdbcTemplate.batchUpdate(sql, batchArgs);
+  System.out.println(Arrays.toString(result));
+}
+
+// 批量删除数据User
+@Override
+public void batchDeleteUser(List<Object[]> batchArgs) {
+  String sql = "delete from user where id=? ";
+  // 底层的话会给你遍历Object
+  int[] result = jdbcTemplate.batchUpdate(sql, batchArgs);
+  System.out.println(Arrays.toString(result));
+}
+```
+

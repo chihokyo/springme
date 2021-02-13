@@ -1,5 +1,6 @@
 package com.jdbctemp.test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.jdbctemp.entity.User;
@@ -104,6 +105,59 @@ public class TestUser {
                 System.out.println(user);
             }
             
+        }
+    }
+
+    @Test
+    public void testBatchAdd(){
+        try (
+            ClassPathXmlApplicationContext context = 
+                new ClassPathXmlApplicationContext("bean.xml");
+        ) {
+            UserService userService = context.getBean("userService",UserService.class);
+            List<Object[]> batchArgs = new ArrayList<>();
+            Object[] o1 = {12,"Amy4", "password", "191-0000", "2222"};
+            Object[] o2 = {13,"Amy5", "password", "191-0000", "2222"};
+            Object[] o3 = {14,"Amy6", "password", "191-0000", "2222"};
+            batchArgs.add(o1);
+            batchArgs.add(o2);
+            batchArgs.add(o3);
+            userService.batchAdd(batchArgs);
+        }
+    }
+
+    @Test
+    public void testBatchUpdate(){
+        try (
+            ClassPathXmlApplicationContext context = 
+                new ClassPathXmlApplicationContext("bean.xml");
+        ) {
+            UserService userService = context.getBean("userService",UserService.class);
+            List<Object[]> batchArgs = new ArrayList<>();
+            Object[] o1 = {"Amy4", "password22", "191-0000", "2222", 12};
+            Object[] o2 = {"Amy4", "password33", "191-0000", "2222", 13};
+            batchArgs.add(o1);
+            batchArgs.add(o2);
+            userService.batchUpdate(batchArgs);
+        }
+    }
+
+
+    @Test
+    public void testBatchDelete(){
+        try (
+            ClassPathXmlApplicationContext context = 
+                new ClassPathXmlApplicationContext("bean.xml");
+        ) {
+            UserService userService = context.getBean("userService",UserService.class);
+            List<Object[]> batchArgs = new ArrayList<>();
+            Object[] o1 = {9};
+            Object[] o2 = {10};
+            Object[] o3 = {11};
+            batchArgs.add(o1);
+            batchArgs.add(o2);
+            batchArgs.add(o3);
+            userService.batchDelete(batchArgs);
         }
     }
 }

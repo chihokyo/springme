@@ -1,5 +1,6 @@
 package com.jdbctemp.dao;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.jdbctemp.entity.User;
@@ -79,4 +80,30 @@ public class UserDaoImpl implements UserDao {
         return userList;
     }
     
+    // 批量添加数据User
+    @Override
+    public void batchAddUsers(List<Object[]> batchArgs) {
+        String sql = "insert into user values(?,?,?,?,?)";
+        // 底层的话会给你遍历Object
+        int[] result = jdbcTemplate.batchUpdate(sql, batchArgs);
+        System.out.println(Arrays.toString(result));
+    }
+
+    // 批量更新数据User
+    @Override
+    public void batchUpdateUser(List<Object[]> batchArgs) {
+        String sql = "update user set name=?,password=?,address=?,phone=? where id=?";
+        // 底层的话会给你遍历Object
+        int[] result = jdbcTemplate.batchUpdate(sql, batchArgs);
+        System.out.println(Arrays.toString(result));
+    }
+
+    // 批量删除数据User
+    @Override
+    public void batchDeleteUser(List<Object[]> batchArgs) {
+        String sql = "delete from user where id=? ";
+        // 底层的话会给你遍历Object
+        int[] result = jdbcTemplate.batchUpdate(sql, batchArgs);
+        System.out.println(Arrays.toString(result));
+    }
 }

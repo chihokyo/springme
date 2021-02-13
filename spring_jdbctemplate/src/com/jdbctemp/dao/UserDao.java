@@ -17,4 +17,11 @@ public interface UserDao {
     User findUser(int id);
 
     List<User> findAllUsers();
+
+    void batchAddUsers(List<Object[]> batchArgs);
+
+    void batchUpdateUser(List<Object[]> batchArgs);
+
+    void batchDeleteUser(List<Object[]> batchArgs);
+
 }
