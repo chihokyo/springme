@@ -1882,3 +1882,230 @@ public void batchDeleteUser(List<Object[]> batchArgs) {
 }
 ```
 
+### 6. 关于事务
+
+其实事务我也不是不懂，就是防止一些数据操作上不统一的现象。
+
+```
+1、事务添加到 JavaEE 三层结构里面 Service 层(业务逻辑层) 
+2、在 Spring 进行事务管理操作
+	(1)有两种方式:编程式事务管理和声明式事务管理(使用)
+3、声明式事务管理 
+	(1)基于注解方式(使用) 
+	(2)基于 xml 配置文件方式
+4、在 Spring 进行声明式事务管理，底层使用 AOP 原理
+
+```
+
+Spring框架的话会根本不同的框架来封装不同的类。主要是通过这个接口
+
+*Interface PlatformTransactionManager*
+
+这个接口有很多子接口or实现类。根据不同的框架就有不同的实现事务的类。
+
+```java
+org.springframework.transaction
+Interface PlatformTransactionManager
+
+// All Superinterfaces:
+TransactionManager
+// All Known Subinterfaces:
+CallbackPreferringPlatformTransactionManager, ResourceTransactionManager
+// All Known Implementing Classes:
+AbstractPlatformTransactionManager, CciLocalTransactionManager, DataSourceTransactionManager, HibernateTransactionManager, JdbcTransactionManager, JmsTransactionManager, JpaTransactionManager, JtaTransactionManager, WebLogicJtaTransactionManager, WebSphereUowTransactionManager
+```
+
+比如jdbc的话就是 *DataSourceTransactionManager* 这个类可以实现事务
+
+事务方法 修改的才叫 查询的不是事务方法 因为数据表没有发生变化
+
+#### 没有事务
+
+```java
+// Dao
+public interface UserTableDao {
+    
+    void addMoney();
+
+    void reduceMoney();
+}
+// Impl
+@Repository
+public class UserTableDaoImpl implements UserTableDao {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    
+    @Override
+    public void addMoney() {
+        String sql = "update user_table set balance=balance+? where user=?";
+        Object[] args = {100, "AA"};
+        jdbcTemplate.update(sql, args);
+
+    }
+
+    @Override
+    public void reduceMoney() {
+        String sql = "update user_table set balance=balance-? where user=?";
+        Object[] args = {100, "BB"};
+        jdbcTemplate.update(sql, args);
+    }
+    
+}
+// Service
+@Service
+public class UserTableService {
+    
+    @Autowired
+    private UserTableDao userTableDao;
+
+    public void accuntMoney() {
+        // 少钱操作
+        userTableDao.reduceMoney();
+        int i = 10/0;
+        // 多钱操作
+        userTableDao.addMoney();
+    }
+}
+// Test
+public class TestUserTable {
+    
+    @Test
+    public void testAccount() {
+        try (
+            ClassPathXmlApplicationContext context = 
+                new ClassPathXmlApplicationContext("bean.xml");
+        ) {
+            UserTableService utService = context.getBean("userTableService", UserTableService.class);
+            utService.accuntMoney();
+        }
+    }
+}
+```
+
+#### 有事务的话
+
+**<u>步骤1</u> Spring配置文件中配置事务管理器**
+
+```xml
+<!-- 创建事务管理器 -->
+<!-- id 名 任意取名 -->
+<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
+  <!-- 注入数据源 -->
+  <property name="dataSource" ref="dataSource"></property>
+</bean>
+```
+
+**<u>步骤2</u> 开启事务注解**
+
+- 增加名称空间tx
+- 开启事务注解
+
+```xml
+xmlns:tx="http://www.springframework.org/schema/tx"
+
+http://www.springframework.org/schema/tx 
+http://www.springframework.org/schema/tx/spring-tx.xsd
+
+<!-- 开启事务注解 -->
+<tx:annotation-driven transaction-manager="transactionManager"></tx:annotation-driven>
+```
+
+**<u>步骤3</u>**
+
+在 **service** 类上面(或者 **service** 类里面方法上面)添加事务注解
+
+```java
+// (1)@Transactional，这个注解添加到类上面，也可以添加方法上面 
+// (2)如果把这个注解添加类上面，这个类里面所有的方法都添加事务 
+// (3)如果把这个注解添加方法上面，为这个方法添加事务
+
+@Service
+@Transactional
+public class UserTableService {
+    
+    @Autowired
+    private UserTableDao userTableDao;
+
+    public void accuntMoney() {
+        // 少钱操作
+        userTableDao.reduceMoney();
+        int i = 10/0;
+        // 多钱操作
+        userTableDao.addMoney();
+    }
+}
+```
+
+##### 事务相关参数
+
+其实这个基本是跟数据库相关的知识，Spring这里也就是在注解的地方多加几个参数来设置一下而已。
+
+- 事务传播行为 **propagation**
+- 事务隔离级别 **ioslation** 解决了 脏读，不可重复读，虚读。这些问题。
+
+还有设置超时时间，回滚操作等等。
+
+#### 完全注解方式
+
+**步骤1 新建一个config包和类**
+
+```java
+@Configuration
+@ComponentScan(basePackages = "com.jdbctemp")
+@EnableTransactionManagement
+public class TxConfig {
+
+    @Bean
+    public DruidDataSource getDruidDataSource() {
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true");
+        dataSource.setUsername("root");
+        dataSource.setPassword("root");
+        return dataSource;
+    }
+
+    // 创建 JdbcTemplate 对象 
+    @Bean
+    public JdbcTemplate getJdbcTemplate(DataSource dataSource) {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate();
+        // 注入 dataSource
+        jdbcTemplate.setDataSource(dataSource);
+        return jdbcTemplate;
+    }
+
+    // 创建 事务管理器
+    @Bean
+    public DataSourceTransactionManager getDataSourceTransactionManager(DataSource dataSource) {
+        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
+        transactionManager.setDataSource(dataSource);
+        return transactionManager;
+    }
+}
+```
+
+**步骤2**
+
+测试的时候要记得引入config类
+
+```java
+public class TestUserTable {
+    
+    @Test
+    public void testAccount() {
+        try (
+            // xml配置文件
+            // ClassPathXmlApplicationContext context = 
+            //     new ClassPathXmlApplicationContext("bean.xml");
+
+            // 完全注解
+            AnnotationConfigApplicationContext context = 
+                new AnnotationConfigApplicationContext(TxConfig.class);
+        ) {
+            UserTableService utService = context.getBean("userTableService", UserTableService.class);
+            utService.accuntMoney();
+        }
+    }
+}
+```
