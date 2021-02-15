@@ -44,3 +44,8 @@ atlassian-ide-plugin.xml
 
 # vscode
 .vscode
+boot_01/mvnw
+boot_01/.mvn/wrapper/MavenWrapperDownloader.java
+boot_01/mvnw.cmd
+boot_01/.mvn/wrapper/maven-wrapper.properties
+boot_01/.mvn/wrapper/maven-wrapper.jar
